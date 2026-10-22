@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sim-Pengadaan</title>
+<meta name="description" content="Sistem informasi procure-to-pay proyek: PR, PO, GRN, gudang, keuangan, dan laporan.">
+<meta name="theme-color" content="#2B3318">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%23476500%27/%3E%3Ctext x=%2750%27 y=%2765%27 font-size=%2755%27 text-anchor=%27middle%27%3E%F0%9F%93%A6%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://script.google.com">
+<link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+<noscript><p style="padding:2rem;font-family:sans-serif">Aplikasi ini membutuhkan JavaScript. Aktifkan JavaScript di browser Anda.</p></noscript>
+<a class="skip" href="#app-container">Lewati ke konten</a>
+<div id="loginView"></div>
+<div id="appView" hidden>
+  <aside id="sidebar" class="sidebar" aria-label="Navigasi utama">
+    <div class="brand"><span class="logo"><i class="bi bi-boxes"></i></span><b>Sim-Pengadaan</b></div>
+    <nav id="nav"></nav>
+    <small class="ver">v2.0 Cepat &amp; Arsip</small>
+  </aside>
+  <div class="scrim" onclick="toggleNav(false)"></div>
+  <div class="main">
+    <header class="topbar">
+      <button class="ib d-lg-none" onclick="toggleNav(true)" aria-label="Buka menu"><i class="bi bi-list"></i></button>
+      <h1 id="pgTitle">Dashboard</h1>
+      <span class="grow"></span>
+      <button class="ib" onclick="refresh()" aria-label="Muat ulang halaman" title="Muat ulang"><i class="bi bi-arrow-clockwise"></i></button>
+      <button class="ib" onclick="toggleTheme()" aria-label="Ganti mode terang/gelap"><i class="bi bi-moon-stars"></i></button>
+      <button class="ib bell" onclick="showNotif()" aria-label="Notifikasi"><i class="bi bi-bell"></i><span id="bellN" hidden>0</span></button>
+      <div class="who"><b id="wNama"></b><small id="wRole"></small></div>
+      <button class="ib" onclick="logout()" aria-label="Keluar"><i class="bi bi-box-arrow-right"></i></button>
+    </header>
+    <main id="app-container" tabindex="-1"></main>
+  </div>
+</div>
+<div class="modal fade" id="modal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable"><div class="modal-content" id="modalBody"></div></div>
+</div>
+<div id="toasts" aria-live="polite"></div>
+<script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<!-- SheetJS (Excel) tidak dimuat di awal: dimuat otomatis saat halaman Impor Excel dibuka -->
+<script defer src="js/config.js"></script>
+<script defer src="js/api.js"></script>
+<script defer src="js/app.js"></script>
+</body>
+</html>
