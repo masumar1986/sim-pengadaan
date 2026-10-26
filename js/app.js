@@ -55,22 +55,23 @@ function renderLogin() {
 }
 async function doLogin(e) {
   e.preventDefault(); const b = $('#lb'); busy(b, true, 'Masuk...'); $('#le').textContent = '';
-  try { const d = await api('login', $('#em').value, $('#pn').value); S.token = d.token; S.user = d.user; start(); }
+  try { const d = await api('login', $('#em').value, $('#pn').value); S.token = d.token; S.user = d.user; S.akses = d.akses || null; start(); }
   catch (x) { busy(b, false); $('#le').textContent = x.message; }
 }
-function resetUI() { cacheClear(); S.notif = null; S.nt = 0; S.token = null; S.user = null; renderLogin(); }
+function resetUI() { S.akses = null; cacheClear(); S.notif = null; S.nt = 0; S.token = null; S.user = null; renderLogin(); }
 function logout() { if (S.token) api('logout', S.token).catch(() => {}); resetUI(); }
 
 // ── Shell & navigasi (SPA: URL tidak pernah berubah) ──
 function start() {
   $('#loginView').hidden = true; $('#appView').hidden = false;
   $('#wNama').textContent = S.user.nama; $('#wRole').textContent = S.user.role;
-  $('#nav').innerHTML = NAV.filter(n => !n.admin || S.user.role === 'Admin').filter(n => !(n.id === 'pr' && S.user.role === 'Site Accounting')).filter(n => !n.imp || can(MASTER_ROLES))
+  $('#nav').innerHTML = NAV.filter(n => S.akses ? S.akses.includes(n.id) : (!n.admin || S.user.role === 'Admin') && !(n.id === 'pr' && S.user.role === 'Site Accounting') && (!n.imp || can(MASTER_ROLES)))
     .map(n => `<button class="nv" data-p="${n.id}" onclick="go('${n.id}')"><i class="bi bi-${n.i}"></i>${n.t}${n.soon ? '<em>' + n.soon + '</em>' : ''}</button>`).join('');
   go('dashboard'); setTimeout(prefetchAll, 700); // data semua menu dimuat di latar belakang
 }
 function toggleNav(o) { $('#sidebar').classList.toggle('open', o); $('.scrim').classList.toggle('open', o); }
 function go(p) {
+  if (S.akses && !S.akses.includes(p)) { toast('Anda tidak memiliki akses ke menu ini.', true); return; } // daftar akses dari server (server tetap memeriksa setiap permintaan)
   S.page = p; apiPageStart(); toggleNav(false);
   document.querySelectorAll('.nv').forEach(b => { b.classList.toggle('on', b.dataset.p === p); b.toggleAttribute('aria-current', b.dataset.p === p); });
   const n = NAV.find(x => x.id === p); $('#pgTitle').textContent = n ? n.t : '';
@@ -384,7 +385,7 @@ async function kSave(b) {
 
 // ════════ Keuangan ════════
 const FIN = ['Site Accounting', 'Site Engineer', 'Cost Control', 'Manajer Proyek', 'Staf Pengadaan', 'Admin'];
-const BGT = ['Cost Control', 'Manajer Proyek', 'Admin'];
+const BGT = ['Site Engineer', 'Cost Control', 'Manajer Proyek', 'Staf Pengadaan', 'Admin'];
 const AKUN = ['Persediaan', 'PPN Masukan', 'Kas/Bank', 'Hutang Dagang', 'Biaya Proyek'];
 const PB = { 'Belum dibayar': 'bd-er', 'Dibayar sebagian': 'bd-w', 'Sudah dibayar': 'bd-ok' };
 const today = () => new Date().toISOString().slice(0, 10);
@@ -781,11 +782,20 @@ function softRefresh(force) { // gambar ulang halaman aktif dari cache; jangan g
 }
 apiOnChange = k => { if (!S.user) return; if (k.indexOf('getNotif|') === 0) { loadNotif(); if (!['po', 'keuangan'].includes(S.page)) return; } softRefresh(); };
 apiOnExpired = () => { if (S.user) { toast('Sesi berakhir, silakan masuk lagi.', true); resetUI(); } };
-function prefetchAll() { // setelah login: semua data menu dimuat dalam SATU permintaan -> pindah menu instan
+function prefetchAll() { // setelah login: data modul yang boleh dibuka dimuat dalam SATU permintaan -> pindah menu instan
   if (!S.token) return; S.rf = S.rf || { dari: new Date().getFullYear() + '-01-01', sampai: today(), disiplin: '', kategori: '' };
-  const L = [['getBoot'], ['getChartData'], ['getNotif'], ['listPR'], ['listPO'], ['listGRN'], ['getStock'], ['listInvoices'], ['getKeuangan'], ['getReport', S.rf], ['listMaster', 'Items'], ['listMaster', 'Suppliers'], ['getAcuanHarga']];
-  if (can(MASTER_ROLES)) L.push(['listArsip']);
-  if (S.user.role === 'Admin') L.push(['listUsers']);
+  const has = m => !S.akses || S.akses.includes(m), L = [];
+  if (has('dashboard')) L.push(['getBoot'], ['getChartData'], ['getNotif']);
+  if (has('pr')) L.push(['listPR']);
+  if (has('po')) L.push(['listPO']);
+  if (has('grn')) L.push(['listGRN']);
+  if (has('gudang')) L.push(['getStock']);
+  if (has('keuangan')) L.push(['listInvoices'], ['getKeuangan']);
+  if (has('laporan')) L.push(['getReport', S.rf]);
+  if (has('master')) L.push(['listMaster', 'Items'], ['listMaster', 'Suppliers']);
+  if (has('pr') || has('po')) L.push(['getAcuanHarga']);
+  if (has('arsip')) L.push(['listArsip']);
+  if (has('pengaturan')) L.push(['listUsers']);
   apiPrefetch(L.map(x => [x[0], S.token].concat(x.slice(1)))).catch(() => {});
 }
 const applyPR = (r, aksi, cat) => { const o = Object.assign({}, r), rw = JSON.parse(o.Riwayat || '[]'), L = +o.Level;

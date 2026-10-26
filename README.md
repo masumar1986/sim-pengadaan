@@ -30,6 +30,10 @@ Backend (`Kode*.gs`, `Api.gs`, `appsscript.json`) **tidak** disimpan di reposito
 - **Cache server (CacheService)** per pengguna dan peran, otomatis dibuang setiap ada perubahan data.
 - **Arsip & Reset:** data induk, PR, dan PO lama dipindahkan ke Arsip (tidak hilang) dan dapat dipulihkan.
 
+## Hak akses
+
+Setiap pengguna punya satu **peran**. Server mengirim daftar modul yang boleh dibuka saat login, dan sidebar hanya menampilkan modul itu. **Admin** mengakses semua modul; **Site Engineer, Cost Control, Manajer Proyek, dan Staf Pengadaan** mengakses semua modul kecuali **Pengaturan**; peran lain sesuai scope-nya. Tabel lengkap ada di `PANDUAN-INSTALASI.md` (Bagian G). Server tetap memeriksa hak akses pada setiap permintaan.
+
 ## Konfigurasi
 
 Buka `js/config.js`, isi `GAS_URL` dengan URL Web App Apps Script (berakhiran `/exec`).

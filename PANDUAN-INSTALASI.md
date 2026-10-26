@@ -150,6 +150,45 @@ git push
 
 ---
 
+## BAGIAN G — Update ke v2.1 (Hak Akses diperbaiki)
+
+Untuk yang sudah menjalankan Bagian F. Data tidak berubah. Kerjakan backend dulu, baru frontend.
+
+**G1. Backend (Apps Script)** — ganti isi tiga berkas: **`Kode.gs`**, **`Kode2.gs`**, **`Kode8.gs`** (berkas lain tidak berubah). Simpan (Ctrl+S), lalu **Deploy → Manage deployments → pensil → New version → Deploy**.
+
+**G2. Rapikan penulisan peran di sheet Users (sekali saja, disarankan).**
+Di editor Apps Script pilih fungsi **`periksaPeranPengguna`** → **Jalankan** → lihat **Log eksekusi**. Fungsi ini membakukan tulisan seperti `admin`, `Staff Pengadaan`, atau `Manager Proyek` menjadi nama peran yang benar, dan menampilkan akun yang perannya **benar-benar tidak dikenal** (misalnya `Kepala Gudang`) agar Anda perbaiki di kolom **Role**. Pilihan peran yang sah: Admin, Staf Lapangan, Manajer Operasional, Site Engineer, Cost Control, Manajer Proyek, Staf Pengadaan, Staf Gudang, Site Accounting.
+
+**G3. Frontend** — dari **`sim-pengadaan-update-v2.1.zip`** salin **`index.html`**, **`js/api.js`**, dan **`js/app.js`** ke folder `sim-pengadaan` Anda (**jangan timpa `js/config.js`**), lalu:
+```bash
+git add .
+git commit -m "Update v2.1: hak akses"
+git push
+```
+Tunggu 1–2 menit, lalu **Ctrl+Shift+R**. Perubahan peran seorang pengguna berlaku setelah ia **login ulang**.
+
+**Aturan akses mulai v2.1** (menu di sidebar hanya yang boleh dibuka; server tetap memeriksa tiap permintaan):
+
+| Modul | Admin | Site Engineer, Cost Control, Manajer Proyek, Staf Pengadaan | Manajer Operasional | Staf Lapangan | Staf Gudang | Site Accounting |
+|---|---|---|---|---|---|---|
+| Dashboard | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ |
+| Permintaan (PR) | ✔ | ✔ | ✔ (+ persetujuan level 1) | ✔ (PR miliknya) | lihat | — |
+| Perbandingan Harga | ✔ | ✔ | — | — | — | — |
+| Pesanan (PO) | ✔ | ✔ | — | — | lihat | lihat |
+| Penerimaan (GRN) | ✔ | ✔ | — | — | ✔ | lihat |
+| Gudang | ✔ | ✔ | lihat | lihat | ✔ | lihat |
+| Keuangan | ✔ | ✔ | — | — | — | ✔ |
+| Laporan | ✔ | ✔ | — | terbatas | ✔ | ✔ |
+| Data Induk | ✔ | ✔ (ubah) | lihat | lihat | lihat | lihat |
+| Impor Excel dan Arsip | ✔ | ✔ | — | — | — | — |
+| Pengaturan | ✔ | — | — | — | — | — |
+
+- **Admin:** akses penuh ke semua modul. **Pengaturan hanya untuk Admin.**
+- **Laporan terbatas (Staf Lapangan):** hanya PO yang berasal dari PR miliknya; tanpa analisis supplier dan ringkasan tagihan.
+- **Persetujuan tetap mengikuti jenjang:** PR disetujui berurutan Manajer Operasional → Site Engineer → Cost Control → Manajer Proyek; PO divalidasi Manajer Proyek. Admin dapat bertindak di setiap tahap.
+
+---
+
 ## Troubleshooting cepat
 
 | Yang terlihat | Penyebab | Solusi |
@@ -159,6 +198,7 @@ git push
 | "Tidak dapat terhubung ke server" | Internet putus atau `GAS_URL` salah ketik | Cek koneksi; buka `GAS_URL` di tab baru, harus muncul JSON |
 | "Email atau PIN salah" | Akun tidak ada/PIN beda | Cek sheet **Users**; setelah 5 kali salah, tunggu 10 menit |
 | "Sesi berakhir" | Sesi 6 jam habis atau halaman dimuat ulang | Login lagi (normal) |
+| Login: "Peran akun ... tidak dikenal" | Tulisan di kolom **Role** sheet Users salah | Jalankan `periksaPeranPengguna()` (G2) atau perbaiki manual sesuai daftar peran yang sah |
 | Halaman tanpa styling | `css/` atau `js/` rata di root | Verifikasi C5: struktur harus `css/style.css`, `js/*.js` |
 | 404 di GitHub Pages | `index.html` tidak di root repo, atau Pages belum aktif | Buka repo: `index.html` harus terlihat di root; cek C8 |
 | 404 dan di repo terlihat folder `sim-pengadaan/` | `git init` di folder induk | Dari folder yang berisi `index.html`: `git init`, `git add .`, `git commit -m "fix"`, `git branch -M main`, `git remote add origin URL`, `git push -u origin main --force` (`--force` menimpa isi repo dengan versi lokal) |
